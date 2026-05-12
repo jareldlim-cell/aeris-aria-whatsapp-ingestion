@@ -1,0 +1,23 @@
+{
+  "name": "baileys-whatsapp",
+  "version": "1.0.0",
+  "description": "WhatsApp message tracker using Baileys (unofficial)",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "jest --forceExit"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0"
+  },
+  "dependencies": {
+    "@google-cloud/storage": "^7.19.0",
+    "@hapi/boom": "^10.0.1",
+    "@whiskeysockets/baileys": "^6.7.0",
+    "axios": "^1.6.0",
+    "dotenv": "^16.0.0",
+    "pg": "^8.20.0",
+    "pino": "^8.0.0",
+    "qrcode-terminal": "^0.12.0"
+  }
+}
