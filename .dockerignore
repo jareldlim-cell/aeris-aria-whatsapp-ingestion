@@ -1,0 +1,7 @@
+node_modules/
+auth_info_baileys/
+media/
+.env
+.github/
+__tests__/
+*.md

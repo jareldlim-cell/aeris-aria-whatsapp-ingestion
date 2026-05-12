@@ -1,4 +1,4 @@
-name: Tests
+name: CI/CD
 
 on:
   push:
@@ -6,23 +6,69 @@ on:
   pull_request:
     branches: [main]
 
+env:
+  PROJECT_ID: aerisgroup-tridorian
+  REGION: asia-southeast1
+  SERVICE: aeris-whatsapp-ingestion
+  REGISTRY: asia-southeast1-docker.pkg.dev
+
 jobs:
-  baileys-unit-tests:
-    name: Baileys WhatsApp Unit Tests
+  test:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - run: npm ci
+
+      - run: npm test
+
+  deploy:
+    name: Deploy to Cloud Run
+    needs: test
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
+      - name: Authenticate to GCP
+        uses: google-github-actions/auth@v2
         with:
-          node-version: '20'
-          cache: 'npm'
-          cache-dependency-path: package-lock.json
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
 
-      - name: Install dependencies
-        run: npm ci
+      - name: Set up gcloud
+        uses: google-github-actions/setup-gcloud@v2
 
-      - name: Run tests
-        run: npm test
+      - name: Configure Docker for Artifact Registry
+        run: gcloud auth configure-docker ${{ env.REGISTRY }} --quiet
+
+      - name: Build and push Docker image
+        run: |
+          IMAGE=${{ env.REGISTRY }}/${{ env.PROJECT_ID }}/whatsapp/${{ env.SERVICE }}:${{ github.sha }}
+          docker build -t $IMAGE .
+          docker push $IMAGE
+          echo "IMAGE=$IMAGE" >> $GITHUB_ENV
+
+      - name: Deploy to Cloud Run
+        uses: google-github-actions/deploy-cloudrun@v2
+        with:
+          service: ${{ env.SERVICE }}
+          region: ${{ env.REGION }}
+          image: ${{ env.IMAGE }}
+          flags: >-
+            --min-instances=1
+            --max-instances=1
+            --no-allow-unauthenticated
+            --memory=512Mi
+            --cpu=1
+          env_vars: |
+            GCS_BUCKET_NAME=${{ secrets.GCS_BUCKET_NAME }}
+            DATABASE_URL=${{ secrets.DATABASE_URL }}
+            FORWARD_TO_WEBHOOK=${{ secrets.FORWARD_TO_WEBHOOK }}
+            WEBHOOK_URL=${{ secrets.WEBHOOK_URL }}

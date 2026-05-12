@@ -11,6 +11,8 @@ const axios = require('axios')
 const qrcode = require('qrcode-terminal')
 const fs = require('fs')
 const path = require('path')
+const http = require('http')
+const { downloadAuthFromGCS, uploadAuthToGCS } = require('./gcsAuth')
 
 const {
     MEDIA_TYPE_INFO,
@@ -162,7 +164,10 @@ async function forwardToFastAPI(params) {
 // ── Main connection ──────────────────────────────────────────────────────────
 
 async function connectToWhatsApp() {
-    const { state, saveCreds } = await useMultiFileAuthState('auth_info_baileys')
+    const authDir = GCS_BUCKET_NAME
+        ? await downloadAuthFromGCS(GCS_BUCKET_NAME)
+        : 'auth_info_baileys'
+    const { state, saveCreds } = await useMultiFileAuthState(authDir)
     const { version } = await fetchLatestBaileysVersion()
 
     const sock = makeWASocket({
@@ -193,7 +198,10 @@ async function connectToWhatsApp() {
         }
     })
 
-    sock.ev.on('creds.update', saveCreds)
+    sock.ev.on('creds.update', async () => {
+        await saveCreds()
+        if (GCS_BUCKET_NAME) await uploadAuthToGCS(GCS_BUCKET_NAME)
+    })
 
     const mapContacts = contacts => {
         for (const contact of contacts) {
@@ -262,5 +270,10 @@ async function connectToWhatsApp() {
 }
 
 if (require.main === module) {
+    // Health check server required by Cloud Run
+    const PORT = process.env.PORT || 8080
+    http.createServer((_req, res) => { res.writeHead(200); res.end('OK') })
+        .listen(PORT, () => console.log(`[INFO] Health check listening on port ${PORT}`))
+
     connectToWhatsApp()
 }
