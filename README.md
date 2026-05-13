@@ -85,7 +85,7 @@ FORWARD_TO_WEBHOOK=false
 WEBHOOK_URL=http://localhost:8000/webhook/whatsapp
 
 # GCS bucket name (leave empty to skip media upload)
-GCS_BUCKET_NAME=your-bucket-name
+GCS_BUCKET_NAME=aeris-aria-landing-dev
 
 # PostgreSQL connection string (leave empty to skip DB storage)
 # Standard:   postgresql://user:password@host:5432/dbname
