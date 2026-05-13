@@ -163,8 +163,10 @@ async function forwardToFastAPI(params) {
 
 // ── Main connection ──────────────────────────────────────────────────────────
 
+const IS_CLOUD_RUN = !!process.env.K_SERVICE
+
 async function connectToWhatsApp() {
-    const authDir = GCS_BUCKET_NAME
+    const authDir = (IS_CLOUD_RUN && GCS_BUCKET_NAME)
         ? await downloadAuthFromGCS(GCS_BUCKET_NAME)
         : 'auth_info_baileys'
     const { state, saveCreds } = await useMultiFileAuthState(authDir)
@@ -200,7 +202,7 @@ async function connectToWhatsApp() {
 
     sock.ev.on('creds.update', async () => {
         await saveCreds()
-        if (GCS_BUCKET_NAME) await uploadAuthToGCS(GCS_BUCKET_NAME)
+        if (IS_CLOUD_RUN && GCS_BUCKET_NAME) await uploadAuthToGCS(GCS_BUCKET_NAME)
     })
 
     const mapContacts = contacts => {
