@@ -123,11 +123,11 @@ Media files are organised by group and date:
 ```
 {bucket}/
   {group_id}/          # WhatsApp group JID (without @g.us)
-    2026/05/13/
+    2026-05-13/
       ABC123DEF.jpg
       GHI456JKL.pdf
   direct/              # Direct (1-on-1) messages
-    2026/05/13/
+    2026-05-13/
       MNO789PQR.mp4
 ```
 

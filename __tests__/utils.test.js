@@ -194,12 +194,12 @@ describe('hkdf', () => {
 describe('buildGCSDestPath', () => {
     test('group message uses group id as top-level folder', () => {
         const result = buildGCSDestPath('/media/abc.jpg', 'MSG001', '120363123456@g.us', UNIX_MAY_13)
-        expect(result).toBe('120363123456/2026/05/13/MSG001.jpg')
+        expect(result).toBe('120363123456/2026-05-13/MSG001.jpg')
     })
 
     test('direct message uses "direct" folder', () => {
         const result = buildGCSDestPath('/media/abc.pdf', 'MSG002', null, UNIX_MAY_13)
-        expect(result).toBe('direct/2026/05/13/MSG002.pdf')
+        expect(result).toBe('direct/2026-05-13/MSG002.pdf')
     })
 
     test('strips @g.us suffix from group id', () => {
@@ -209,7 +209,7 @@ describe('buildGCSDestPath', () => {
 
     test('pads single-digit month and day with zeros', () => {
         const result = buildGCSDestPath('/media/img.png', 'MSG004', null, UNIX_JAN_05)
-        expect(result).toBe('direct/2026/01/05/MSG004.png')
+        expect(result).toBe('direct/2026-01-05/MSG004.png')
     })
 
     test('preserves file extension from filepath', () => {

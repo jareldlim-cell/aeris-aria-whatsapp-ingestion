@@ -87,11 +87,11 @@ function hkdf(key, length, info) {
 }
 
 function buildGCSDestPath(filepath, messageId, groupId, unixSeconds) {
-    const date     = new Date(unixSeconds * 1000)
-    const datePath = `${date.getUTCFullYear()}/${String(date.getUTCMonth() + 1).padStart(2, '0')}/${String(date.getUTCDate()).padStart(2, '0')}`
-    const folder   = groupId ? groupId.replace('@g.us', '') : 'direct'
-    const ext      = path.extname(filepath).slice(1)
-    return `${folder}/${datePath}/${messageId}.${ext}`
+    const date   = new Date(unixSeconds * 1000)
+    const dateStr = `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, '0')}-${String(date.getUTCDate()).padStart(2, '0')}`
+    const folder = groupId ? groupId.replace('@g.us', '') : 'direct'
+    const ext    = path.extname(filepath).slice(1)
+    return `${folder}/${dateStr}/${messageId}.${ext}`
 }
 
 function buildWebhookPayload({ from, senderName, groupId, messageId, body, messageType, timestamp }) {
